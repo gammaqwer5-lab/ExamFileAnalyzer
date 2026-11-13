@@ -14,29 +14,36 @@ namespace FileAnalyzer.Services
 {
     public class ParallelCount
     {
-        public static async Task ProcessAsync(string[] paths, int workerCount)
+        public static async Task<(List<FileResult> Results, List<string> Errors)> ProcessAsync(string[] paths, int workerCount)
         {
+            var results = new ConcurrentBag<FileResult>();
+            var errors = new ConcurrentBag<string>();
             var channel = Channel.CreateBounded<string>(10);
+
             Task[] workers = Enumerable
-           .Range(1, workerCount)
+            .Range(1, workerCount)
             .Select(async workerId =>
             {
                 await foreach (var task in channel.Reader.ReadAllAsync())
                 {
-                    await WorkerAsync(workerId, task);
+                    await WorkerAsync(workerId, task, results, errors);
                 }
             })
            .ToArray();
+
             foreach (var file in paths)
             {
                 await channel.Writer.WriteAsync(file);
             }
+
             channel.Writer.TryComplete();
             await Task.WhenAll(workers);
+
+            return (results.ToList(), errors.ToList());
         }
 
 
-        static async Task WorkerAsync(int workerId,string file)
+        static async Task WorkerAsync(int workerId,string file, ConcurrentBag<FileResult> results, ConcurrentBag<string> errors)
         {
             try
             {
@@ -47,15 +54,19 @@ namespace FileAnalyzer.Services
                     workerId,
                     file);
 
+                results.Add(new FileResult(Path.GetFileName(file), result.Lines, result.Words, result.Characters));
+
                 Console.WriteLine(
                     $"[WORKER {workerId}] Завершил: {Path.GetFileName(file)} Слов: {result.Words} Линий: {result.Lines} Символов: {result.Characters}");
             }
             catch (IOException ex)
             {
+                errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
                 Console.WriteLine(ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
+                errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
                 Console.WriteLine(ex.Message);
             }
         }

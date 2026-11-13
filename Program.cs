@@ -1,9 +1,10 @@
+using FileAnalyzer.Services;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Threading.Channels;
 using System.Text.Json;
-using FileAnalyzer.Services;
+using System.Threading.Channels;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Variant02;
 
@@ -50,22 +51,28 @@ public sealed class ProjectService
         }
 
         // TODO 2: Последовательно подсчитать строки, слова и символы.
+        var results = new List<FileResult>();
+        var errors = new List<string>();
+
         var sw = Stopwatch.StartNew();
         foreach (string file in paths)
         {
             try
             {
                 string content = await File.ReadAllTextAsync(file);
-
                 var countedFile = TextCounter.Count(content);
+
+                results.Add(new FileResult(Path.GetFileName(file), countedFile.Lines, countedFile.Words, countedFile.Characters));
                 Console.WriteLine($"{Path.GetFileName(file)}: Слов: {countedFile.Words} Линий: {countedFile.Lines} Символов: {countedFile.Characters}");
             }
             catch (IOException ex)
             {
+                errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
                 Console.WriteLine(ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
+                errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
                 Console.WriteLine(ex.Message);
             }
 
@@ -76,7 +83,7 @@ public sealed class ProjectService
 
         // TODO 3: Реализовать параллельный анализ файлов.
         var swPar = Stopwatch.StartNew();
-        await ParallelCount.ProcessAsync(paths,3);
+        var (resultsPar, errorsPar) = await ParallelCount.ProcessAsync(paths,3);
         swPar.Stop();
 
         Console.WriteLine($"\nПарралельно: {swPar.ElapsedMilliseconds} ms");
@@ -89,6 +96,10 @@ public sealed class ProjectService
 
         // TODO 6: Обрабатывать ошибки отдельных файлов, не прекращая весь отчёт.
         // TODO 7: Сохранять итоговый отчёт через корректно закрываемый поток.
+
+        var allErrors = errors.Concat(errorsPar).Distinct().ToList();
+
+        Report.SaveTxt(results, allErrors, sw, swPar, acc);
 
         // TODO 8: Построить pipeline через bounded Channel и фиксированных worker-ов.
         // TODO 9: Добавить JSON-отчёт.
