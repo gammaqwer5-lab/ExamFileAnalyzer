@@ -60,6 +60,8 @@ public sealed class ProjectService
 
         }
         // TODO 3: Реализовать параллельный анализ файлов.
+
+        ParallelCount.ProcessAsync(paths,3);
         // TODO 4: Ограничить число одновременно обрабатываемых файлов.
         // TODO 5: Сравнить последовательный и параллельный режимы с Stopwatch.
         // TODO 6: Обрабатывать ошибки отдельных файлов, не прекращая весь отчёт.
@@ -69,7 +71,6 @@ public sealed class ProjectService
         // TODO 9: Добавить JSON-отчёт.
         // TODO 10: Сохранять параметры анализа в HKCU.
 
-        Console.WriteLine("Стартовый проект собран. Реализуйте задания варианта.");
         await Task.CompletedTask;
     }
 }
