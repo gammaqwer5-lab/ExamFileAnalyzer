@@ -50,7 +50,7 @@ public sealed class ProjectService
         }
 
         // TODO 2: Последовательно подсчитать строки, слова и символы.
-
+        var sw = Stopwatch.StartNew();
         foreach (string file in paths)
         {
             string content = await File.ReadAllTextAsync(file);
@@ -59,11 +59,23 @@ public sealed class ProjectService
             Console.WriteLine($"{Path.GetFileName(file)}: Слов: {countedFile.Words} Линий: {countedFile.Lines} Символов: {countedFile.Characters}");
 
         }
-        // TODO 3: Реализовать параллельный анализ файлов.
+        sw.Stop();
 
-        ParallelCount.ProcessAsync(paths,3);
+        Console.WriteLine($"\nПоследовательно: {sw.ElapsedMilliseconds} ms");
+
+        // TODO 3: Реализовать параллельный анализ файлов.
+        var swPar = Stopwatch.StartNew();
+        await ParallelCount.ProcessAsync(paths,3);
+        swPar.Stop();
+
+        Console.WriteLine($"\nПарралельно: {swPar.ElapsedMilliseconds} ms");
         // TODO 4: Ограничить число одновременно обрабатываемых файлов.
         // TODO 5: Сравнить последовательный и параллельный режимы с Stopwatch.
+
+        float acc = (float)sw.ElapsedMilliseconds / (float)swPar.ElapsedMilliseconds;
+
+        Console.WriteLine($"Параллельный в {acc} быстрее");
+
         // TODO 6: Обрабатывать ошибки отдельных файлов, не прекращая весь отчёт.
         // TODO 7: Сохранять итоговый отчёт через корректно закрываемый поток.
 
