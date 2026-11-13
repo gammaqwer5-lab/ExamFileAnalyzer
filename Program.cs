@@ -53,10 +53,21 @@ public sealed class ProjectService
         var sw = Stopwatch.StartNew();
         foreach (string file in paths)
         {
-            string content = await File.ReadAllTextAsync(file);
+            try
+            {
+                string content = await File.ReadAllTextAsync(file);
 
-            var countedFile = TextCounter.Count(content);
-            Console.WriteLine($"{Path.GetFileName(file)}: Слов: {countedFile.Words} Линий: {countedFile.Lines} Символов: {countedFile.Characters}");
+                var countedFile = TextCounter.Count(content);
+                Console.WriteLine($"{Path.GetFileName(file)}: Слов: {countedFile.Words} Линий: {countedFile.Lines} Символов: {countedFile.Characters}");
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
 
         }
         sw.Stop();
