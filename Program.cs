@@ -1,0 +1,66 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Threading.Channels;
+using System.Text.Json;
+
+namespace Variant02;
+
+internal static class Program
+{
+    private static async Task Main()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.WriteLine("Зачётный проект 02: Параллельный анализатор файлов");
+        Console.WriteLine(new string('=', 64));
+
+        // Стартовый сценарий нужен для проверки структуры проекта.
+        // Реализацию индивидуальных требований выполняйте в ProjectService.
+        var service = new ProjectService();
+        await service.RunAsync();
+
+        Console.WriteLine();
+        Console.WriteLine("Нажмите Enter для завершения.");
+        Console.ReadLine();
+    }
+}
+
+public sealed class ProjectService
+{
+    public async Task RunAsync()
+    {
+        // TODO: перенесите предметную логику в отдельные методы и классы.
+        // TODO: не размещайте весь проект в Main.
+        // TODO 1: Найти текстовые файлы в каталоге.
+        string dataDirectory = Path.Combine(
+            AppContext.BaseDirectory,
+            "Data");
+
+        Directory.CreateDirectory(dataDirectory);
+
+        Console.WriteLine(dataDirectory);
+
+        string[] paths = Directory.GetFiles(
+            dataDirectory,
+            "*.txt");
+
+        if (paths.Length == 0)
+        {
+            Console.WriteLine("Нет файлов для обработки");
+            return;
+        }
+
+        // TODO 2: Последовательно подсчитать строки, слова и символы.
+        // TODO 3: Реализовать параллельный анализ файлов.
+        // TODO 4: Ограничить число одновременно обрабатываемых файлов.
+        // TODO 5: Сравнить последовательный и параллельный режимы с Stopwatch.
+        // TODO 6: Обрабатывать ошибки отдельных файлов, не прекращая весь отчёт.
+        // TODO 7: Сохранять итоговый отчёт через корректно закрываемый поток.
+
+        // TODO 8: Построить pipeline через bounded Channel и фиксированных worker-ов.
+        // TODO 9: Добавить JSON-отчёт.
+        // TODO 10: Сохранять параметры анализа в HKCU.
+
+        Console.WriteLine("Стартовый проект собран. Реализуйте задания варианта.");
+        await Task.CompletedTask;
+    }
+}
