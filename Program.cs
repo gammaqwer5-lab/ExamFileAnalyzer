@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Channels;
 using System.Text.Json;
+using FileAnalyzer.Services;
+using System.Threading.Tasks;
 
 namespace Variant02;
 
@@ -37,8 +39,6 @@ public sealed class ProjectService
 
         Directory.CreateDirectory(dataDirectory);
 
-        Console.WriteLine(dataDirectory);
-
         string[] paths = Directory.GetFiles(
             dataDirectory,
             "*.txt");
@@ -48,8 +48,17 @@ public sealed class ProjectService
             Console.WriteLine("Нет файлов для обработки");
             return;
         }
-         
+
         // TODO 2: Последовательно подсчитать строки, слова и символы.
+
+        foreach (string file in paths)
+        {
+            string content = await File.ReadAllTextAsync(file);
+
+            var countedFile = TextCounter.Count(content);
+            Console.WriteLine($"{Path.GetFileName(file)}: Слов: {countedFile.Words} Линий: {countedFile.Lines} Символов: {countedFile.Characters}");
+
+        }
         // TODO 3: Реализовать параллельный анализ файлов.
         // TODO 4: Ограничить число одновременно обрабатываемых файлов.
         // TODO 5: Сравнить последовательный и параллельный режимы с Stopwatch.
