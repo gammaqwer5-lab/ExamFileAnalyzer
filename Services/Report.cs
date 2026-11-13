@@ -48,6 +48,7 @@ namespace FileAnalyzer.Services
                 SequentialMs = sw.ElapsedMilliseconds,
                 ParallelMs = swPar.ElapsedMilliseconds,
                 Speedup = acc,
+                Errors = errors
             };
             var options = new JsonSerializerOptions
             {
