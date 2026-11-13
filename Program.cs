@@ -103,6 +103,7 @@ public sealed class ProjectService
 
         // TODO 8: Построить pipeline через bounded Channel и фиксированных worker-ов.
         // TODO 9: Добавить JSON-отчёт.
+        Report.SaveJson(results, allErrors, sw, swPar, acc);
         // TODO 10: Сохранять параметры анализа в HKCU.
 
         await Task.CompletedTask;
